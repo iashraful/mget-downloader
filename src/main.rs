@@ -1,4 +1,5 @@
 use clap::Parser;
+use futures::stream::{StreamExt, TryStreamExt};
 
 /// Simple CLI for handling domain input
 #[derive(Parser, Debug)]
@@ -9,17 +10,36 @@ struct Args {
 }
 
 fn parse_url(s: &str) -> Result<String, String> {
-    Ok(s.trim().to_string())
+    let u: String = s.trim().to_string();
+    if u.contains("http") {
+        // Check if it's correct url or not.
+        Ok(u)
+    } else {
+        Err(format!("Invalid URL: {}", u))
+    }
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let args = Args::parse();
 
     // Split input by comma
     let urls: Vec<&str> = args.urls.split(',').collect();
 
-    println!("You entered domains:");
-    for d in urls {
-        println!("- {}", parse_url(d).unwrap());
-    }
+    let stream = futures::stream::iter(urls.into_iter().map(|url| async move {
+        let _url = parse_url(url);
+        if _url.is_err() {
+            println!("Error parsing URL: {}", _url.err().unwrap());
+            Err(())
+        } else {
+            println!("Parsed URL: {}", _url.unwrap());
+            Ok(())
+        }
+    }));
+
+    stream
+        .buffer_unordered(2)
+        .try_for_each(|_| async { Ok(()) })
+        .await
+        .unwrap();
 }
