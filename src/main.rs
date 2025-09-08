@@ -1,8 +1,10 @@
 use clap::Parser;
 use futures::stream::{StreamExt, TryStreamExt};
+use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use reqwest::Client;
 use std::fs::File;
 use std::io::Write;
+use std::sync::Arc;
 
 /// Simple CLI for handling domain input
 #[derive(Parser, Debug)]
@@ -27,12 +29,26 @@ fn sanitize_filename(url: &str) -> String {
     filename
 }
 
-async fn download_file(client: Client, url: &str) -> Result<reqwest::Response, String> {
+async fn download_file(
+    client: Client,
+    url: &str,
+    multi_progress: &Arc<MultiProgress>,
+) -> Result<(reqwest::Response, ProgressBar), String> {
     match client.get(url).send().await {
         Ok(response) => {
             if response.status().is_success() {
-                println!("Downloaded: {}", url);
-                Ok(response)
+                let total_size = response.content_length().unwrap_or(0);
+                let pb = multi_progress.add(ProgressBar::new(total_size));
+                println!("Downloaded: {}", &url);
+                pb.set_style(
+                    ProgressStyle::with_template(
+                        "{msg:20} [{bar:40.cyan/blue}] {bytes}/{total_bytes} ({eta})",
+                    )
+                    .unwrap()
+                    .progress_chars("##-"),
+                );
+                pb.set_message("Test Message");
+                Ok((response, pb))
             } else {
                 Err(format!(
                     "Failed to download {}: HTTP {}",
@@ -73,9 +89,11 @@ async fn main() {
     // Split input by comma
     let urls: Vec<&str> = args.urls.split(',').collect();
     let client = Client::new();
+    let multi_progress = Arc::new(MultiProgress::new());
 
     let stream = futures::stream::iter(urls.into_iter().map(|url| {
         let client = client.clone();
+        let multi_progress = multi_progress.clone();
         async move {
             let _url = parse_url(url);
             if _url.is_err() {
@@ -83,8 +101,9 @@ async fn main() {
                 Err(())
             } else {
                 let _url = _url.unwrap();
-                let file = download_file(client, &_url).await;
-                save_file(file.unwrap(), &_url).await;
+                let (file, pb) = download_file(client, &_url, &multi_progress).await.unwrap();
+                save_file(file, &_url).await;
+                pb.finish_with_message("Download complete");
                 Ok(())
             }
         }
