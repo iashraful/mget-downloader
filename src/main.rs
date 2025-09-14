@@ -2,11 +2,12 @@ use clap::Parser;
 use futures::stream::StreamExt;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use reqwest::Client;
-use std::path::Path;
 use std::sync::Arc;
 use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
 
+pub mod utils;
+use utils::{generate_filename_from_url, parse_url};
 /// Simple wget-like CLI with multiple parallel downloads
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -16,26 +17,6 @@ struct Args {
 
     #[arg(short, long, default_value_t = 3)]
     parallel: usize,
-}
-
-fn parse_url(s: &str) -> Result<String, String> {
-    Ok(s.trim().to_string())
-}
-
-fn url_filename(url: &str) -> String {
-    let parsed =
-        reqwest::Url::parse(url).unwrap_or_else(|_| reqwest::Url::parse("http://dummy").unwrap());
-    let path = parsed.path();
-    let filename = Path::new(path)
-        .file_name()
-        .map(|n| n.to_string_lossy().into_owned())
-        .unwrap_or_else(|| format!("{}/index.html", url).to_string());
-
-    if filename.is_empty() {
-        format!("{}/index.html", url).to_string()
-    } else {
-        filename
-    }
 }
 
 #[tokio::main]
@@ -55,7 +36,7 @@ async fn main() {
                     let total_size = resp.content_length().unwrap_or(0);
 
                     // Pick a filename (last path segment, or fallback)
-                    let filename = url_filename(&url);
+                    let filename = generate_filename_from_url(&url);
                     let pb = m.add(ProgressBar::new(total_size));
                     pb.set_style(
                         ProgressStyle::with_template(
