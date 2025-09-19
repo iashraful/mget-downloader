@@ -27,6 +27,8 @@ async fn download_file(client: Client, url: String, m: Arc<MultiProgress>) {
 
             // Pick a filename (last path segment, or fallback)
             let filename = generate_filename_from_url(&url);
+            // This is needed to make sure the progress bars are displayed correctly. Just a new line
+            println!();
             let pb = m.add(ProgressBar::new(total_size));
             pb.set_style(
                 ProgressStyle::with_template(
