@@ -33,11 +33,19 @@ async fn download_file(client: Client, url: String, m: Arc<MultiProgress>) {
             pb.set_style(
                 ProgressStyle::with_template(
                     "{msg:20} [{bar:40.cyan/blue}] {bytes:>7}/{total_bytes:7} ({eta})",
+                    // "[{bar:40.cyan/blue}] {bytes:>7}/{total_bytes:7} ({eta})",
                 )
                 .unwrap()
                 .progress_chars("=> "),
             );
-            pb.set_message(filename.clone());
+            let display_name = if filename.len() > 30 {
+                let mut s = filename[..30].to_string();
+                s.push_str("..."); // add ellipsis
+                s
+            } else {
+                filename.clone()
+            };
+            pb.set_message(display_name);
 
             match File::create(&filename).await {
                 Ok(mut file) => {
