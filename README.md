@@ -1,5 +1,8 @@
 # rwget‑downloader
 
+[![Release](https://github.com/iashraful/rwget-downloader/actions/workflows/release.yml/badge.svg?event=release)](https://github.com/iashraful/rwget-downloader/actions/workflows/release.yml)
+[![Testing](https://github.com/iashraful/rwget-downloader/actions/workflows/tests.yml/badge.svg)](https://github.com/iashraful/rwget-downloader/actions/workflows/tests.yml)
+
 A simple Rust‑based downloader tool, inspired by `wget`, with additional features to facilitate faster, resilient, or parallel downloads.  
 
 > **Note:** This project is experimental / work in progress.
@@ -8,13 +11,26 @@ A simple Rust‑based downloader tool, inspired by `wget`, with additional featu
 
 ## 🚀 Features
 
-- Download files via HTTP/HTTPS  
-- Support for resuming partial downloads  
+- Download files via HTTP/HTTPS
 - Parallel chunk downloads to increase throughput  
 - Basic error handling & retries  
 - Configurable via command line arguments  
 
 ---
+
+## 🚀 Install & Usage
+
+- Download from the [release](https://github.com/iashraful/rwget-downloader/releases)
+- Install according to your platform.
+- Run like this,
+
+```bash
+rwget https://example.com/hello.zip,https://example.com/video.mp4 -p 2
+```
+
+---
+
+## :fire: Contributing guide
 
 ## 📦 Requirements
 
@@ -31,45 +47,21 @@ Clone the repo and build with Cargo:
 ```bash
 git clone https://github.com/iashraful/rwget-downloader.git
 cd rwget-downloader
-cargo build --release
+cargo run -- https://example.com/hello.zip,https://example.com/video.mp4 -p 2
 ```
 
-The compiled binary will be in:
-
-```
-target/release/rwget
-```
-
----
-
-## ⚙ Usage
-
-Basic usage:
-
-```bash
-./rwget <URL> [OPTIONS]
-```
-
-Common options may include:
+### Common options may include
 
 | Option | Description |
 |---|---|
-| `--output, -o <FILE>` | Path to save the downloaded file |
 | `--parallel, -p <N>` | Number of parallel chunks / threads to download |
-| `--resume` | Resume an interrupted download |
-| `--retry <COUNT>` | Number of times to retry on error |
-
-Example:
-
-```bash
-./rwget https://example.com/file.zip -o /tmp/file.zip --parallel 4 --resume --retry 3
-```
+| `--help` | Any kind of you need about the script |
 
 ---
 
 ## 🔍 Project Structure
 
-```
+```markdown
 rwget-downloader/
 ├── src/             # main Rust code
 ├── Cargo.toml       # project metadata & dependencies
@@ -89,16 +81,6 @@ cargo test
 ```
 
 You may also want to test on large files, slow/unstable networks, etc., to verify resume, retries, and parallel download behavior.
-
----
-
-## 💡 Caveats & To‑Do
-
-- Partial downloads / parallel chunks need careful coordination (ranges, seek, etc.)  
-- TLS / HTTPS certificate issues  
-- Bandwidth throttling or rate‑limit support missing  
-- Windows support & cross‑platform edge cases not yet fully ensured  
-- Large file (> several GB) behaviors and memory footprint optimizations needed  
 
 ---
 
