@@ -1,6 +1,7 @@
 # rwget‑downloader
 
-[![Release](https://github.com/iashraful/rwget-downloader/actions/workflows/release.yml/badge.svg?event=release)](https://github.com/iashraful/rwget-downloader/actions/workflows/release.yml)
+[![Release](https://img.shields.io/github/v/release/iashraful/rwget-downloader)](https://github.com/iashraful/rwget-downloader/releases)
+
 [![Testing](https://github.com/iashraful/rwget-downloader/actions/workflows/tests.yml/badge.svg)](https://github.com/iashraful/rwget-downloader/actions/workflows/tests.yml)
 
 A simple Rust‑based downloader tool, inspired by `wget`, with additional features to facilitate faster, resilient, or parallel downloads.  
